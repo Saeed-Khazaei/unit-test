@@ -4,31 +4,25 @@ import { describe, expect, test } from "vitest";
 import TermsAndConditions from "../../components/TermsAndConditions";
 
 describe("TermsAndConditions", () => {
-  test("should render with correct text and initial state", () => {
+  const renderComponent = () => {
     render(<TermsAndConditions />);
 
-    const heading = screen.getByRole("heading");
+    return {
+      heading: screen.getByRole("heading"),
+      checkbox: screen.getByRole("checkbox"),
+      button: screen.getByRole("button"),
+    };
+  };
+  test("should render with correct text and initial state", () => {
+    const { heading, checkbox, button } = renderComponent();
 
-    expect(heading).toBeInTheDocument();
     expect(heading).toHaveTextContent("Terms & Conditions");
-
-    const checkbox = screen.getByRole("checkbox");
-
-    expect(checkbox).toBeInTheDocument();
     expect(checkbox).not.toBeChecked();
-
-    const button = screen.getByRole("button", {
-      name: /submit/i,
-    });
-    expect(button).toBeInTheDocument();
     expect(button).toBeDisabled();
   });
 
   test("should enabled button when checkbox is checked", async () => {
-    render(<TermsAndConditions />);
-
-    const checkbox = screen.getByRole("checkbox");
-    const button = screen.getByRole("button");
+    const { checkbox, button } = renderComponent();
 
     expect(button).toBeDisabled();
 
