@@ -6,9 +6,9 @@ import {
 import { HttpResponse, delay, http } from "msw";
 import { describe, expect, test } from "vitest";
 import ProductList from "../../components/ProductList";
+import AllProviders from "../AllProviders";
 import db from "../mocks/db";
 import { server } from "../mocks/server";
-import { QueryClient, QueryClientProvider } from "react-query";
 
 describe("ProductList", () => {
   const productIds: number[] = [];
@@ -24,19 +24,9 @@ describe("ProductList", () => {
   });
 
   const renderComponent = () => {
-    const queryClient = new QueryClient({
-      defaultOptions: {
-        queries: {
-          retry: false,
-        },
-      },
+    render(<ProductList />, {
+      wrapper: AllProviders,
     });
-
-    render(
-      <QueryClientProvider client={queryClient}>
-        <ProductList />
-      </QueryClientProvider>
-    );
   };
 
   test("should render the list of products", async () => {
