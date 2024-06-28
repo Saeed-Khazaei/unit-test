@@ -12,8 +12,7 @@ describe("ToastDemo", () => {
         <Toaster />
       </>
     );
-    screen.debug();
-    // expect(screen.getByRole("alert")).toBeInTheDocument();
+
     const button = screen.getByRole("button");
     const user = userEvent.setup();
     await user.click(button);
