@@ -71,4 +71,31 @@ describe("BrowseProductsPage", () => {
       })
     );
   });
+
+  test("should not render an error if categories cannot be fetched", async () => {
+    server.use(http.get("/categories", () => HttpResponse.error()));
+    renderComponent();
+
+    waitForElementToBeRemoved(
+      await screen.findByRole("progressbar", {
+        name: "categories-loading",
+      })
+    );
+    expect(screen.queryByText(/error/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("combobox", { name: /category/i })
+    ).not.toBeInTheDocument();
+  });
+
+  test("should render an error if products cannot be fetched", async () => {
+    server.use(http.get("/products", () => HttpResponse.error()));
+    renderComponent();
+
+    waitForElementToBeRemoved(
+      await screen.findByRole("progressbar", {
+        name: "products-loading",
+      })
+    );
+    expect(screen.queryByText(/error/i)).toBeInTheDocument();
+  });
 });
