@@ -1,9 +1,9 @@
 import { render, screen } from "@testing-library/react";
-import { test, expect, describe } from "vitest";
-import ProductList from "../../components/ProductList";
-import { server } from "../mocks/server";
 import { HttpResponse, http } from "msw";
+import { describe, expect, test } from "vitest";
+import ProductList from "../../components/ProductList";
 import db from "../mocks/db";
+import { server } from "../mocks/server";
 
 describe("ProductList", () => {
   const productIds: number[] = [];
@@ -44,5 +44,13 @@ describe("ProductList", () => {
     );
     const item = await screen.findByText(/no products/i);
     expect(item).toBeInTheDocument();
+  });
+
+  test("should render an error message if an error", async () => {
+    server.use(http.get("/products", () => HttpResponse.error()));
+
+    render(<ProductList />);
+
+    expect(await screen.findByText(/error/i)).toBeInTheDocument();
   });
 });

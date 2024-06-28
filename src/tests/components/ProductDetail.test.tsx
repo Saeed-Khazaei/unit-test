@@ -2,7 +2,6 @@ import { render, screen } from "@testing-library/react";
 import { HttpResponse, http } from "msw";
 import { describe, expect, test } from "vitest";
 import ProductDetail from "../../components/ProductDetail";
-import { products } from "../mocks/data";
 import db from "../mocks/db";
 import { server } from "../mocks/server";
 
@@ -44,5 +43,11 @@ describe("ProductDetail", () => {
   test("should render an error for invalid productId", async () => {
     render(<ProductDetail productId={0} />);
     expect(await screen.findByText(/invalid/i)).toBeInTheDocument();
+  });
+
+  test("should render an error for server error", async () => {
+    server.use(http.get("/products/1", () => HttpResponse.error()));
+    render(<ProductDetail productId={1} />);
+    expect(await screen.findByText(/error/i)).toBeInTheDocument();
   });
 });
