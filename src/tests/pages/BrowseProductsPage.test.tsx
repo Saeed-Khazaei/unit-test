@@ -9,13 +9,39 @@ import { Theme } from "@radix-ui/themes";
 import { server } from "../mocks/server";
 import { HttpResponse, delay, http } from "msw";
 import userEvent from "@testing-library/user-event";
+import db from "../mocks/db";
+import { Category, Product } from "../../entities";
+import { CartProvider } from "../../providers/CartProvider";
 
 describe("BrowseProductsPage", () => {
+  const categories: Category[] = [];
+  const products: Product[] = [];
+  beforeAll(() => {
+    [1, 2].forEach((item) => {
+      categories.push(
+        db.category.create({
+          name: "Category" + item,
+        })
+      );
+    });
+    Array(5).forEach(() => {
+      products.push(db.product.create());
+    });
+  });
+
+  afterAll(() => {
+    const categoryIds = categories.map((category) => category.id);
+    db.product.deleteMany({ where: { id: { in: categoryIds } } });
+    const productIds = categories.map((product) => product.id);
+    db.product.deleteMany({ where: { id: { in: productIds } } });
+  });
   const renderComponent = () => {
     render(
-      <Theme>
-        <BrowseProductsPage />
-      </Theme>
+      <CartProvider>
+        <Theme>
+          <BrowseProductsPage />
+        </Theme>
+      </CartProvider>
     );
   };
   test("should render", async () => {
@@ -109,8 +135,25 @@ describe("BrowseProductsPage", () => {
     const user = userEvent.setup();
     await user.click(combobox);
 
-    const options = await screen.findAllByRole("option");
+    expect(screen.getByRole("option", { name: /all/i })).toBeInTheDocument();
+    categories.forEach((category) => {
+      expect(
+        screen.getByRole("option", { name: category.name })
+      ).toBeInTheDocument();
+    });
+  });
 
-    expect(options.length).toBeGreaterThan(0);
+  test("should render products", async () => {
+    renderComponent();
+
+    waitForElementToBeRemoved(
+      await screen.queryByRole("progressbar", {
+        name: "products-loading",
+      })
+    );
+
+    products.forEach((product) => {
+      expect(screen.getByText(product.name)).toBeInTheDocument();
+    });
   });
 });
