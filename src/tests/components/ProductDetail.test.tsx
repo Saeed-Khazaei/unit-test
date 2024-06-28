@@ -1,4 +1,8 @@
-import { render, screen } from "@testing-library/react";
+import {
+  render,
+  screen,
+  waitForElementToBeRemoved,
+} from "@testing-library/react";
 import { HttpResponse, http } from "msw";
 import { describe, expect, test } from "vitest";
 import ProductDetail from "../../components/ProductDetail";
@@ -49,5 +53,19 @@ describe("ProductDetail", () => {
     server.use(http.get("/products/1", () => HttpResponse.error()));
     render(<ProductDetail productId={1} />);
     expect(await screen.findByText(/error/i)).toBeInTheDocument();
+  });
+
+  test("should remove the loading indicator after data is fetched", async () => {
+    render(<ProductDetail productId={1} />);
+
+    await waitForElementToBeRemoved(() => screen.getByText(/loading/i));
+  });
+
+  test("should remove the loading indicator if data fetching fails", async () => {
+    server.use(http.get("/products/1", () => HttpResponse.error()));
+
+    render(<ProductDetail productId={1} />);
+
+    await waitForElementToBeRemoved(() => screen.getByText(/loading/i));
   });
 });
