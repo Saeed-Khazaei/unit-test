@@ -1,4 +1,3 @@
-import { Theme } from "@radix-ui/themes";
 import {
   render,
   screen,
@@ -8,7 +7,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, test } from "vitest";
 import { Category, Product } from "../../entities";
 import BrowseProductsPage from "../../pages/BrowseProductsPage";
-import { CartProvider } from "../../providers/CartProvider";
+import AllProviders from "../AllProviders";
 import db, { getProductsByCategoryId } from "../mocks/db";
 import { simulateDelay, simulateError } from "../utils";
 
@@ -136,13 +135,9 @@ describe("BrowseProductsPage", () => {
 });
 
 const renderComponent = () => {
-  render(
-    <CartProvider>
-      <Theme>
-        <BrowseProductsPage />
-      </Theme>
-    </CartProvider>
-  );
+  render(<BrowseProductsPage />, {
+    wrapper: AllProviders,
+  });
 
   const user = userEvent.setup();
   const getProductsSkeleton = () =>
