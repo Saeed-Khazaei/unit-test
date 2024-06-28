@@ -3,8 +3,20 @@ import { test, expect, describe } from "vitest";
 import ProductList from "../../components/ProductList";
 import { server } from "../mocks/server";
 import { HttpResponse, http } from "msw";
+import db from "../mocks/db";
 
 describe("ProductList", () => {
+  const productIds: number[] = [];
+  beforeAll(() => {
+    Array.from({ length: 3 }).forEach(() => {
+      const product = db.product.create();
+      productIds.push(product.id);
+    });
+  });
+
+  afterAll(() => {
+    db.product.deleteMany({ where: { id: { in: productIds } } });
+  });
   test("should render the list of products", async () => {
     render(
       <>
