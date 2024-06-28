@@ -8,6 +8,7 @@ import BrowseProductsPage from "../../pages/BrowseProductsPage";
 import { Theme } from "@radix-ui/themes";
 import { server } from "../mocks/server";
 import { HttpResponse, delay, http } from "msw";
+import userEvent from "@testing-library/user-event";
 
 describe("BrowseProductsPage", () => {
   const renderComponent = () => {
@@ -97,5 +98,19 @@ describe("BrowseProductsPage", () => {
       })
     );
     expect(screen.queryByText(/error/i)).toBeInTheDocument();
+  });
+
+  test("should render categories", async () => {
+    renderComponent();
+
+    const combobox = await screen.findByRole("combobox");
+    expect(combobox).toBeInTheDocument();
+
+    const user = userEvent.setup();
+    await user.click(combobox);
+
+    const options = await screen.findAllByRole("option");
+
+    expect(options.length).toBeGreaterThan(0);
   });
 });
