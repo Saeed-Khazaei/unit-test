@@ -22,22 +22,24 @@ describe("ProductForm", () => {
     });
     return {
       onSubmit,
-      waitForFormToLoad: screen.findByRole("form"),
-      getInputs: () => ({
-        nameInput: screen.getByPlaceholderText(/name/i),
-        priceInput: screen.getByPlaceholderText(/price/i),
-        categoryInput: screen.getByRole("combobox", { name: /category/i }),
-      }),
+      waitForFormToLoad: async () => {
+        await screen.findByRole("form");
+
+        return {
+          nameInput: screen.getByPlaceholderText(/name/i),
+          priceInput: screen.getByPlaceholderText(/price/i),
+          categoryInput: screen.getByRole("combobox", { name: /category/i }),
+        };
+      },
     };
   };
   test("should render form fields", async () => {
-    const { waitForFormToLoad, getInputs } = renderComponent();
+    const { waitForFormToLoad } = renderComponent();
 
     // Use one of this below approaches to use await once and after that code can implement get queries
-    await waitForFormToLoad;
+    const { categoryInput, nameInput, priceInput } = await waitForFormToLoad();
     // await waitForElementToBeRemoved(() => screen.queryByText(/loading/i));
 
-    const { categoryInput, nameInput, priceInput } = getInputs();
     // screen.getByRole("textbox", { name: /name/i }) // aria-label="name"
     expect(nameInput).toBeInTheDocument();
     expect(priceInput).toBeInTheDocument();
@@ -51,14 +53,20 @@ describe("ProductForm", () => {
       price: 1000,
       categoryId: category.id,
     };
-    const { waitForFormToLoad, getInputs } = renderComponent(product);
+    const { waitForFormToLoad } = renderComponent(product);
 
-    await waitForFormToLoad;
-
-    const { categoryInput, nameInput, priceInput } = getInputs();
+    const { categoryInput, nameInput, priceInput } = await waitForFormToLoad();
 
     expect(nameInput).toHaveValue(product.name);
     expect(priceInput).toHaveValue(product.price.toString());
     expect(categoryInput).toHaveTextContent(category.name);
+  });
+
+  test("should put focus on name input", async () => {
+    const { waitForFormToLoad } = renderComponent();
+
+    const { nameInput } = await waitForFormToLoad();
+
+    expect(nameInput).toHaveFocus();
   });
 });
