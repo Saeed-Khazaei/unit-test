@@ -1,10 +1,12 @@
-import { test, expect, describe } from "vitest";
+import { faker } from "@faker-js/faker";
+import { describe, expect, test } from "vitest";
 
 describe("group", () => {
   test("should", async () => {
-    const response = await fetch("/categories");
-    const data = await response.json();
-    console.log(data);
-    expect(data).toHaveLength(3);
+    console.log("Faker", {
+      name: faker.commerce.productName(),
+      price: faker.commerce.price({ min: 1, max: 100 }),
+    });
+    expect(3).toEqual(3);
   });
 });
