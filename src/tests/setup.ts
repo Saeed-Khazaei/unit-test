@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
-import { vi } from "vitest";
 import ResizeObserver from "resize-observer-polyfill";
+import { vi } from "vitest";
 
 import { server } from "./mocks/server";
 

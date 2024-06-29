@@ -1,5 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { Toaster } from "react-hot-toast";
 import { describe, expect, test, vi } from "vitest";
 import ProductForm from "../../components/ProductForm";
 import { Category, Product } from "../../entities";
@@ -18,9 +19,16 @@ describe("ProductForm", () => {
 
   const renderComponent = (product?: Product) => {
     const onSubmit = vi.fn();
-    render(<ProductForm onSubmit={onSubmit} product={product} />, {
-      wrapper: AllProviders,
-    });
+
+    render(
+      <>
+        <ProductForm onSubmit={onSubmit} product={product} />
+        <Toaster />
+      </>,
+      {
+        wrapper: AllProviders,
+      }
+    );
     return {
       onSubmit,
       waitForFormToLoad: async () => {
@@ -28,14 +36,19 @@ describe("ProductForm", () => {
 
         const nameInput = screen.getByPlaceholderText(/name/i);
         const priceInput = screen.getByPlaceholderText(/price/i);
-        const categoryInput = screen.getByRole("combobox", {
-          name: /category/i,
-        });
+        const categoryInput = screen.getByRole("combobox");
         const submitButton = screen.getByRole("button");
 
         type FormData = {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           [K in keyof Product]: any;
+        };
+
+        const validData: FormData = {
+          name: "a",
+          price: 10,
+          id: 1,
+          categoryId: category.id,
         };
 
         const fill = async (product: FormData) => {
@@ -46,10 +59,13 @@ describe("ProductForm", () => {
           if (product.price !== undefined) {
             await user.type(priceInput, product.price.toString());
           }
-          await user.click(categoryInput);
-          const options = screen.getAllByRole("option");
-          await user.click(options[0]);
-          await user.click(submitButton);
+
+          await waitFor(async () => {
+            await user.click(categoryInput);
+            const options = screen.getAllByRole("option");
+            await user.click(options[0]);
+            await user.click(submitButton);
+          });
         };
 
         return {
@@ -58,6 +74,7 @@ describe("ProductForm", () => {
           categoryInput,
           submitButton,
           fill,
+          validData,
         };
       },
     };
@@ -161,4 +178,28 @@ describe("ProductForm", () => {
       expect(error).toHaveTextContent(errorMessage);
     }
   );
+
+  test("should call onSubmit with the correct data", async () => {
+    const { waitForFormToLoad, onSubmit } = renderComponent();
+
+    const form = await waitForFormToLoad();
+    await form.fill(form.validData);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, ...rest } = form.validData;
+    expect(onSubmit).toHaveBeenCalledWith(rest);
+  });
+
+  test("should display an error if submission fails", async () => {
+    const { waitForFormToLoad, onSubmit } = renderComponent();
+    onSubmit.mockRejectedValue({});
+
+    const form = await waitForFormToLoad();
+    await form.fill(form.validData);
+
+    screen.debug();
+
+    const toast = await screen.findByRole("status");
+    expect(toast).toBeInTheDocument();
+    expect(toast).toHaveTextContent(/error/i);
+  });
 });
