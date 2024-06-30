@@ -31,6 +31,11 @@ describe("ProductForm", () => {
     );
     return {
       onSubmit,
+      expectErrorToBeInTheDocument: (errorMessage: RegExp) => {
+        const error = screen.getByRole("alert");
+        expect(error).toBeInTheDocument();
+        expect(error).toHaveTextContent(errorMessage);
+      },
       waitForFormToLoad: async () => {
         await screen.findByRole("form");
 
@@ -129,14 +134,13 @@ describe("ProductForm", () => {
   ])(
     "should display an error if name is missing $scenario",
     async ({ name, errorMessage }) => {
-      const { waitForFormToLoad } = renderComponent();
+      const { waitForFormToLoad, expectErrorToBeInTheDocument } =
+        renderComponent();
 
       const form = await waitForFormToLoad();
       await form.fill({ price: 10, name, id: 1, categoryId: 1 });
 
-      const error = screen.getByRole("alert");
-      expect(error).toBeInTheDocument();
-      expect(error).toHaveTextContent(errorMessage);
+      expectErrorToBeInTheDocument(errorMessage);
     }
   );
 
@@ -168,14 +172,13 @@ describe("ProductForm", () => {
   ])(
     "should display an error if price is missing $scenario",
     async ({ price, errorMessage }) => {
-      const { waitForFormToLoad } = renderComponent();
+      const { waitForFormToLoad, expectErrorToBeInTheDocument } =
+        renderComponent();
 
       const form = await waitForFormToLoad();
       await form.fill({ price, name: "a", id: 1, categoryId: 1 });
 
-      const error = screen.getByRole("alert");
-      expect(error).toBeInTheDocument();
-      expect(error).toHaveTextContent(errorMessage);
+      expectErrorToBeInTheDocument(errorMessage);
     }
   );
 
